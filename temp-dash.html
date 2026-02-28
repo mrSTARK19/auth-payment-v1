@@ -36,28 +36,31 @@ const status = params.get("status");
 
 if(status === "SUCCESS"){
 
-    const duration = localStorage.getItem("selectedPlanDays");
+    let duration = localStorage.getItem("selectedPlanDays");
 
-    if(duration){
-
-        const oldExpiry = localStorage.getItem("subscriptionExpiry");
-        let baseDate = new Date();
-
-        // If still active, extend from old expiry
-        if(oldExpiry && new Date(oldExpiry) > new Date()){
-            baseDate = new Date(oldExpiry);
-        }
-
-        baseDate.setDate(baseDate.getDate() + parseInt(duration));
-
-        localStorage.setItem("subscriptionExpiry", baseDate.toISOString());
-        localStorage.removeItem("selectedPlanDays");
-
-        // Clean URL
-        window.history.replaceState({}, document.title, "temp-dash.html");
-
-        alert("Subscription Activated 🎉");
+    if(!duration){
+        console.log("Duration missing. Preventing redirect loop.");
+        return;  // Stop here if duration missing
     }
+
+    const oldExpiry = localStorage.getItem("subscriptionExpiry");
+    let baseDate = new Date();
+
+    if(oldExpiry && new Date(oldExpiry) > new Date()){
+        baseDate = new Date(oldExpiry);
+    }
+
+    baseDate.setDate(baseDate.getDate() + parseInt(duration));
+
+    localStorage.setItem("subscriptionExpiry", baseDate.toISOString());
+
+    // Remove only AFTER saving expiry
+    localStorage.removeItem("selectedPlanDays");
+
+    // Clean URL
+    window.history.replaceState({}, document.title, "temp-dash.html");
+
+    alert("Subscription Activated 🎉");
 }
 
 // 🔐 STEP 2 — Now protect dashboard
