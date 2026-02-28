@@ -30,7 +30,37 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔐 Protect Dashboard
+// 🎯 STEP 1 — Handle payment success FIRST
+const params = new URLSearchParams(window.location.search);
+const status = params.get("status");
+
+if(status === "SUCCESS"){
+
+    const duration = localStorage.getItem("selectedPlanDays");
+
+    if(duration){
+
+        const oldExpiry = localStorage.getItem("subscriptionExpiry");
+        let baseDate = new Date();
+
+        // If still active, extend from old expiry
+        if(oldExpiry && new Date(oldExpiry) > new Date()){
+            baseDate = new Date(oldExpiry);
+        }
+
+        baseDate.setDate(baseDate.getDate() + parseInt(duration));
+
+        localStorage.setItem("subscriptionExpiry", baseDate.toISOString());
+        localStorage.removeItem("selectedPlanDays");
+
+        // Clean URL
+        window.history.replaceState({}, document.title, "temp-dash.html");
+
+        alert("Subscription Activated 🎉");
+    }
+}
+
+// 🔐 STEP 2 — Now protect dashboard
 onAuthStateChanged(auth, (user) => {
 
   if (!user) {
@@ -54,28 +84,4 @@ window.logout = function(){
   window.location.href = "index.html";
 };
 
-// 🎯 Set expiry after payment success
-const params = new URLSearchParams(window.location.search);
-const status = params.get("status");
-
-if(status === "SUCCESS"){
-
-    const duration = localStorage.getItem("selectedPlanDays");
-
-    if(duration){
-
-        const today = new Date();
-        today.setDate(today.getDate() + parseInt(duration));
-
-        localStorage.setItem("subscriptionExpiry", today.toISOString());
-
-        localStorage.removeItem("selectedPlanDays");
-
-        alert("Subscription Activated 🎉");
-    }
-}
-
 </script>
-
-</body>
-</html>
