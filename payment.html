@@ -64,6 +64,7 @@ h1{
     background:#004792;
     color:white;
     cursor:pointer;
+    font-weight:bold;
 }
 
 .select-btn:hover{
@@ -74,11 +75,6 @@ h1{
     margin-top:20px;
     color:white;
     display:none;
-}
-
-.success{
-    margin-top:20px;
-    color:yellow;
     font-weight:bold;
 }
 </style>
@@ -95,38 +91,43 @@ h1{
             <h2>Basic</h2>
             <div class="price">₹200</div>
             <div class="duration">1 Month Access</div>
-            <button class="select-btn" onclick="createPayment(200, 30)">Choose Plan</button>
+            <button class="select-btn" onclick="createPayment(200, 30)">
+                Choose Plan
+            </button>
         </div>
 
         <div class="card">
             <h2>Standard</h2>
             <div class="price">₹1000</div>
             <div class="duration">6 Months Access</div>
-            <button class="select-btn" onclick="createPayment(1000, 180)">Choose Plan</button>
+            <button class="select-btn" onclick="createPayment(1000, 180)">
+                Choose Plan
+            </button>
         </div>
 
         <div class="card">
             <h2>Premium</h2>
             <div class="price">₹2000</div>
             <div class="duration">1 Year Access</div>
-            <button class="select-btn" onclick="createPayment(2000, 365)">Choose Plan</button>
+            <button class="select-btn" onclick="createPayment(2000, 365)">
+                Choose Plan
+            </button>
         </div>
 
     </div>
 
-    <div class="loader" id="loader">Generating Payment Link...</div>
-    <div class="success" id="successMessage"></div>
+    <div class="loader" id="loader">
+        Generating Payment Link...
+    </div>
+
 </div>
 
 <script>
 
-let currentLinkId = null;
-let selectedDuration = 30;
-
-// 🔹 Create Payment Link
 function createPayment(amount, durationDays){
 
-    selectedDuration = durationDays;
+    // Save selected plan duration locally
+    localStorage.setItem("selectedPlanDays", durationDays);
 
     document.getElementById("loader").style.display = "block";
 
@@ -138,54 +139,22 @@ function createPayment(amount, durationDays){
     .then(res => res.json())
     .then(data => {
 
+        console.log("Backend response:", data);
+
         if(data.link_url){
-            currentLinkId = data.link_id;
-
-            window.open(data.link_url, "_blank");
-
-            startPollingForPayment(currentLinkId);
+            // Redirect user to Cashfree payment page
+            window.location.href = data.link_url;
         }else{
             alert("Error creating payment link");
+            document.getElementById("loader").style.display = "none";
         }
 
     })
     .catch(err=>{
-        console.error(err);
+        console.error("Error:", err);
         alert("Server error");
+        document.getElementById("loader").style.display = "none";
     });
-}
-
-
-// 🔹 Poll Payment Status
-function startPollingForPayment(linkId){
-
-    const interval = setInterval(() => {
-
-        fetch(`https://flaskserver-3c3s.onrender.com/check-payment/${linkId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            if(data.status === "success"){
-                clearInterval(interval);
-                document.getElementById("loader").style.display = "none";
-                document.getElementById("successMessage").innerHTML = "✅ Payment Confirmed!";
-
-                verifyAndSave();
-            }
-
-        })
-        .catch(err=>{
-            console.error("Polling error:", err);
-        });
-
-    }, 3000);
-}
-
-
-// 🔹 Save Pass After Payment
-function verifyAndSave(){
-
-    alert("data saved...")
 }
 
 </script>
