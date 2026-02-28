@@ -63,6 +63,12 @@ if(status === "SUCCESS"){
 // 🔐 STEP 2 — Now protect dashboard
 onAuthStateChanged(auth, (user) => {
 
+  if (user === null) {
+      // Still loading auth state OR logged out
+      return;
+  }
+
+  // If logged out
   if (!user) {
       window.location.href = "index.html";
       return;
@@ -70,7 +76,9 @@ onAuthStateChanged(auth, (user) => {
 
   const expiry = localStorage.getItem("subscriptionExpiry");
 
-  if(!expiry || new Date() > new Date(expiry)){
+  console.log("Expiry:", expiry);
+
+  if (!expiry || new Date() > new Date(expiry)) {
       window.location.href = "payment.html";
       return;
   }
@@ -78,10 +86,5 @@ onAuthStateChanged(auth, (user) => {
   document.getElementById("expiryInfo").innerText =
       "Subscription valid until: " + new Date(expiry).toDateString();
 });
-
-window.logout = function(){
-  signOut(auth);
-  window.location.href = "index.html";
-};
 
 </script>
