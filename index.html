@@ -124,23 +124,46 @@
 
     // Detect Login State
     onAuthStateChanged(auth, (user) => {
-      const userInfo = document.getElementById("userInfo");
-      if (user) {
-        // Redirect after successful login
-        window.location.href = "payment.html";
-      }
-      if (user) {
-        userInfo.innerHTML = `
-        <p><strong>${user.displayName}</strong></p>
-        <p>${user.email}</p>
-        <img src="${user.photoURL}" width="80">
-        <br>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      `;
-      } else {
-        userInfo.innerHTML = "";
-      }
-    });
+  const userInfo = document.getElementById("userInfo");
+
+  if (user) {
+
+    // Show user info
+    userInfo.innerHTML = `
+      <p><strong>${user.displayName}</strong></p>
+      <p>${user.email}</p>
+      <img src="${user.photoURL}" width="80">
+      <br>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    `;
+
+    // 🔥 Check subscription
+    checkSubscription();
+
+  } else {
+    userInfo.innerHTML = "";
+  }
+});
+
+function checkSubscription(){
+
+  const expiry = localStorage.getItem("subscriptionExpiry");
+
+  if(!expiry){
+      window.location.href = "payment.html";
+      return;
+  }
+
+  const now = new Date();
+  const expiryDate = new Date(expiry);
+
+  if(now < expiryDate){
+      window.location.href = "temp-dash.html";
+  }else{
+      localStorage.removeItem("subscriptionExpiry");
+      window.location.href = "payment.html";
+  }
+}
   </script>
 
 </body>
